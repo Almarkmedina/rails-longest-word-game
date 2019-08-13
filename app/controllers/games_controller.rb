@@ -12,17 +12,27 @@ class GamesController < ApplicationController
     @word = params[:word]
     @letters = params[:letters]
 
-    english_word = open("https://wagon-dictionary.herokuapp.com/#{@word}").read
-    result = JSON.parse(english_word)
-
-    if @word == @letters
-      @answer = "Sorry but #{@word} can't be built out of #{@letters}"
-    elsif @word != result
+    if (included?(@word, @letters)) && (check(@word))
+      @answer = "Congratulations! #{@word} is a valid English word "
+    elsif !check(@word)
       @answer = "Sorry but #{@word} does not seem to be a valid English word"
     else
-      @answer = "Congratulations! #{@word} is a valid English word "
+      @answer = "Sorry but #{@word} can't be built out of #{@letters}"
+
     end
   end
+
+# check word in dictionary api
+  def check(word)
+    english_word = open("https://wagon-dictionary.herokuapp.com/#{word}").read
+    result = JSON.parse(english_word)
+    result['found']
+  end
+ # only checks for letter frequencies
+  def included?(word, letters)
+    word.chars.all? { |letter| word.count(letter) <= letters.count(letter) }
+  end
+
 end
 
   # def score
